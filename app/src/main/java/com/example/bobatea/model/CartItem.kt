@@ -6,5 +6,5 @@ data class CartItem(
     val sweetness: Sweetness,
     val iceQuantity: IceQuantity,
     val topping: Topping?,
-    val quantity: Int
+    var quantity: Int
 )
