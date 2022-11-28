@@ -1,9 +1,11 @@
 package com.example.bobatea.ui.product_detail
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.ScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -34,7 +36,8 @@ fun ProductDetail() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black),
+            .background(Color.Black)
+            .verticalScroll(rememberScrollState()),
         ) {
         Card(
             modifier = Modifier
@@ -261,6 +264,7 @@ fun ProductDetail() {
                 }
             }
             Column(
+                modifier = Modifier.padding(top = 12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ){
                 Text(
