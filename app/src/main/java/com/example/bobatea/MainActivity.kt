@@ -6,20 +6,13 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -41,10 +34,26 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-sealed class AppRoute(val route: String, val icon: Int, val showBottomBar: Boolean) {
-    object Profile : AppRoute("profile", R.drawable.profile_icon, true)
-    object ProductList : AppRoute("product_list", R.drawable.drink_icon, true)
-    object Order : AppRoute("order", R.drawable.cart_icon, true)
+sealed class AppRoute(
+    val route: String,
+    val icon: Int,
+    val showBottomBar: Boolean
+) {
+    object Profile : AppRoute(
+        "profile",
+        R.drawable.profile_icon,
+        true
+    )
+    object ProductList : AppRoute(
+        "product_list",
+        R.drawable.drink_icon,
+        true
+    )
+    object Order : AppRoute(
+        "order",
+        R.drawable.cart_icon,
+        false
+    )
 }
 
 @Composable

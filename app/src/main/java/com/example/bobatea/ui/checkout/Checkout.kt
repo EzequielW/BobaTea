@@ -1,8 +1,6 @@
 package com.example.bobatea.ui.checkout
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,26 +10,27 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bobatea.R
 import com.example.bobatea.model.*
+import com.example.bobatea.util.DottedShape
 import java.math.BigDecimal
 
 @Composable
 fun Checkout() {
     val cart = remember {
         Cart(
-            mutableStateListOf<CartItem>(
+            mutableStateListOf(
                 CartItem(
                     Drink("regular", "Milk tea", "Sweet tint of caramel and chocolate",
                         BigDecimal.valueOf(4.99), R.drawable.milk_tea),
@@ -55,35 +54,72 @@ fun Checkout() {
             .background(color = Color.Black),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-        ){
-            itemsIndexed(cart.cartItems) { index, ci ->
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 21.dp)
-                        .padding(bottom = 24.dp)
-                ) {
-                    CartItemCard(
-                        ci,
-                        {
-                            if(ci.quantity > 1){
-                                cart.cartItems[index] = ci.copy(quantity = ci.quantity - 1)
-                            }
-                            subtotal = cart.calculateSubtotal()
-                            total = cart.calculateTotal(subtotal)
-                        },
-                        {
-                            cart.cartItems[index] = ci.copy(quantity = ci.quantity + 1)
-                            subtotal = cart.calculateSubtotal()
-                            total = cart.calculateTotal(subtotal)
+        Column {
+            TopAppBar(
+                title = {
+                    Text(
+                        "CHECKOUT",
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                navigationIcon = {
+                    Box(
+                        modifier = Modifier.size(width = 70.dp, height = 50.dp)
+                    ) {
+                        IconButton(
+                            onClick = {}
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(width = 32.dp, height = 32.dp),
+                                imageVector = Icons.Default.Close,
+                                tint = Color(0xFFFF0076),
+                                contentDescription = null
+                            )
                         }
+                    }
+                },
+                actions = {
+                    Box(
+                        modifier = Modifier.size(width = 70.dp, height = 50.dp)
+                    ) {
+
+                    }
+                },
+                backgroundColor = Color.Transparent,
+                contentColor = Color.White
+            )
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ){
+                itemsIndexed(cart.cartItems) { index, ci ->
+                    Column(
+                        modifier = Modifier
+                            .padding(horizontal = 21.dp)
+                            .padding(bottom = 24.dp)
+                    ) {
+                        CartItemCard(
+                            ci,
+                            {
+                                if(ci.quantity > 1){
+                                    cart.cartItems[index] = ci.copy(quantity = ci.quantity - 1)
+                                }
+                                subtotal = cart.calculateSubtotal()
+                                total = cart.calculateTotal(subtotal)
+                            },
+                            {
+                                cart.cartItems[index] = ci.copy(quantity = ci.quantity + 1)
+                                subtotal = cart.calculateSubtotal()
+                                total = cart.calculateTotal(subtotal)
+                            }
+                        )
+                    }
+                    Divider(
+                        color = Color(0xFF7A85A3).copy(alpha = 0.4f),
                     )
                 }
-                Divider(
-                    color = Color(0xFF7A85A3).copy(alpha = 0.4f),
-                )
             }
         }
         Column(
@@ -92,86 +128,28 @@ fun Checkout() {
                 .fillMaxWidth()
                 .padding(horizontal = 21.dp)
         ){
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 12.dp)
-            ) {
-                Text(
-                    "Subtotal",
-                    fontWeight = FontWeight(700),
-                    color = Color(0xFF7A85A3)
-                )
-                Column(Modifier.fillMaxWidth()){
-                    Canvas(Modifier.height(1.dp).padding(horizontal = 10.dp)) {
-                        drawLine(
-                            color = Color.White,
-                            start = Offset(0f, 0f),
-                            end = Offset(size.width, 0f),
-                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 30f), 0f),
-                            strokeWidth = 5f
-                        )
-                    }
-                }
-                Text(
-                    "$" + bigDecimalToPrice(subtotal),
-                    fontWeight = FontWeight(700),
-                    color = Color(0xFF7A85A3)
-                )
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    "Taxes",
-                    fontWeight = FontWeight(700),
-                    color = Color(0xFF7A85A3)
-                )
-                Text(
-                    "$" + bigDecimalToPrice(cart.taxes),
-                    fontWeight = FontWeight(700),
-                    color = Color(0xFF7A85A3)
-                )
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    "Delivery Fee",
-                    fontWeight = FontWeight(700),
-                    color = Color(0xFF7A85A3)
-                )
-                Text(
-                    "$" + bigDecimalToPrice(cart.deliveryFee),
-                    fontWeight = FontWeight(700),
-                    color = Color(0xFF7A85A3)
-                )
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 90.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    "Order Total",
-                    fontWeight = FontWeight(700),
-                    color = Color.White
-                )
-                Text(
-                    "$" + bigDecimalToPrice(total),
-                    fontWeight = FontWeight(700),
-                    color = Color.White
-                )
-            }
+            CheckoutItem(
+                "Subtotal",
+                "$" + bigDecimalToPrice(subtotal),
+                Color(0xFF7A85A3)
+            )
+            CheckoutItem(
+                "Taxes",
+                "$" + bigDecimalToPrice(cart.taxes),
+                Color(0xFF7A85A3)
+            )
+            CheckoutItem(
+                "Delivery Fee",
+                "$" + bigDecimalToPrice(cart.deliveryFee),
+                Color(0xFF7A85A3)
+            )
+            CheckoutItem(
+                "Total",
+                "$" + bigDecimalToPrice(total),
+                Color.White
+            )
             Row (
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(top = 45.dp, bottom = 28.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ){
                 OutlinedButton(
@@ -316,6 +294,41 @@ fun CartItemCard(cartItem: CartItem, onRemove: () -> Unit, onAdd: () -> Unit) {
                 .clickable { }
                 .padding(start = 20.dp),
             fontSize = 14.sp
+        )
+    }
+}
+
+@Composable
+fun CheckoutItem(name: String, value: String, color: Color) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 12.dp),
+        verticalAlignment = Alignment.Bottom
+    ) {
+        Text(
+            name,
+            fontWeight = FontWeight(700),
+            color = color,
+            textAlign = TextAlign.End
+        )
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .padding(bottom = 5.dp)
+        ) {
+            Box(
+                Modifier
+                    .height(2.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp)
+                    .background(color, shape = DottedShape(step = 10.dp))
+            )
+        }
+        Text(
+            value,
+            fontWeight = FontWeight(700),
+            color = color
         )
     }
 }
