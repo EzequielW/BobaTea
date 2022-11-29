@@ -37,21 +37,25 @@ class MainActivity : ComponentActivity() {
 sealed class AppRoute(
     val route: String,
     val icon: Int,
+    val selectedColor: Color,
     val showBottomBar: Boolean
 ) {
     object Profile : AppRoute(
         "profile",
         R.drawable.profile_icon,
+        Color.White,
         true
     )
     object ProductList : AppRoute(
         "product_list",
         R.drawable.drink_icon,
+        Color.Unspecified,
         true
     )
     object Order : AppRoute(
         "order",
         R.drawable.cart_icon,
+        Color.White,
         false
     )
 }
@@ -67,11 +71,13 @@ fun BobaTeaApp() {
     BobaTeaTheme {
         val navController = rememberNavController()
         var bottomBarState by rememberSaveable { (mutableStateOf(true)) }
+        var selectedColor by remember { (mutableStateOf(Color.White)) }
         val navBackStackEntry2 by navController.currentBackStackEntryAsState()
 
         for (app_route in routes){
             if(navBackStackEntry2?.destination?.route == app_route.route){
                 bottomBarState = app_route.showBottomBar
+                selectedColor = app_route.selectedColor
             }
         }
 
@@ -90,7 +96,11 @@ fun BobaTeaApp() {
 
                             routes.forEach { appRoute ->
                                 BottomNavigationItem(
-                                    icon = { Icon(painter = painterResource(id = appRoute.icon), contentDescription = null, tint = Color.White) },
+                                    icon = {
+                                        Icon(
+                                            painter = painterResource(id = appRoute.icon),
+                                            contentDescription = null,
+                                        )},
                                     selected = currentDestination?.hierarchy?.any { it.route == appRoute.route } == true,
                                     onClick = {
                                         navController.navigate(appRoute.route) {
@@ -106,7 +116,9 @@ fun BobaTeaApp() {
                                             // Restore state when reselecting a previously selected item
                                             restoreState = true
                                         }
-                                    }
+                                    },
+                                    selectedContentColor = selectedColor,
+                                    unselectedContentColor = Color.White.copy(alpha = 0.3f)
                                 )
                             }
                         }
