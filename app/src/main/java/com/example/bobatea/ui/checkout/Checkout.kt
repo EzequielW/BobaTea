@@ -21,10 +21,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.bobatea.R
 import com.example.bobatea.model.*
 import com.example.bobatea.util.DottedShape
-import java.math.BigDecimal
 
 @Composable
 fun Checkout(navController: NavController, cart: Cart) {
@@ -192,7 +190,7 @@ fun CartItemCard(cartItem: CartItem, onRemove: () -> Unit, onAdd: () -> Unit) {
                 fontSize = 19.sp
             )
             Text(
-                cartItem.sweetness.sweet.uppercase(),
+                cartItem.sweetness.naming.uppercase(),
                 color = Color(0xFF7A85A3),
                 fontSize = 19.sp
             )
@@ -203,7 +201,7 @@ fun CartItemCard(cartItem: CartItem, onRemove: () -> Unit, onAdd: () -> Unit) {
             )
             if(cartItem.topping != null) {
                 Text(
-                    cartItem.topping.topping.uppercase(),
+                    cartItem.topping.naming.uppercase(),
                     color = Color(0xFF7A85A3),
                     fontSize = 19.sp
                 )

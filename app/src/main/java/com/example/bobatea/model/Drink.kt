@@ -10,18 +10,20 @@ data class Drink(
     val image: Int
 )
 
-enum class Sweetness(val sweet: String) {
+enum class Sweetness(val naming: String) {
     REGULAR("regular sweet"),
     SEMI("semi sweet"),
     EXTRA("extra sweet"),
     NOTHING("no sweet")
 }
 
-enum class IceQuantity {
-    LOW, MEDIUM, HIGH
+enum class IceQuantity(val naming: String) {
+    LOW("low"),
+    MEDIUM("medium"),
+    HIGH("high")
 }
 
-enum class Topping(val topping: String) {
+enum class Topping(val naming: String) {
     LARGE_TAPIOCA("large tapioca"),
     SMALL_TAPIOCA("small tapioca"),
     LYCHEE_JELLY("lychee jelly")

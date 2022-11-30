@@ -1,46 +1,77 @@
 package com.example.bobatea.ui.product_detail
 
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.ScrollableState
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.bobatea.R
 import com.example.bobatea.model.Cart
 import com.example.bobatea.model.Drink
-import java.math.BigDecimal
+import com.example.bobatea.model.IceQuantity
+import com.example.bobatea.model.Sweetness
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ProductDetail(navController: NavController, drink: Drink, cart: Cart) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
-            .verticalScroll(rememberScrollState()),
-        ) {
-        ProductImageCard(navController, drink, cart)
-        ProductOptions()
-    }
+    val sheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        confirmStateChange = { it != ModalBottomSheetValue.HalfExpanded }
+    )
+    val coroutineScope = rememberCoroutineScope()
+
+    var title by remember { mutableStateOf("SELECT SWEETNESS LEVEL") }
+    var selectOptions by remember { mutableStateOf(listOf("")) }
+    var selectedOption by remember { mutableStateOf(Sweetness.SEMI.naming) }
+
+    ModalBottomSheetLayout(
+        sheetState = sheetState,
+        sheetContent = {
+            SelectContent(
+                title,
+                selectOptions,
+                selectedOption,
+                onSelect = { option ->
+                    selectedOption = option
+                }
+            )},
+        modifier = Modifier.fillMaxWidth(),
+        content = {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                ProductImageCard(navController, drink, cart)
+                ProductOptions(
+                    onClickSelect = { name, selectList, selected ->
+                        title = name
+                        selectOptions = selectList
+                        selectedOption = selected
+                        coroutineScope.launch {
+                            sheetState.show()
+                        }
+                    }
+                )
+            }
+        }
+    )
 }
 
 @Composable
@@ -110,7 +141,7 @@ fun ProductImageCard(navController: NavController, drink: Drink, cart: Cart) {
 }
 
 @Composable
-fun ProductOptions() {
+fun ProductOptions(onClickSelect: (String, List<String>, String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -118,6 +149,25 @@ fun ProductOptions() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
+        var subtypeOption = "MILK"
+        var sweetnessOption = Sweetness.REGULAR.naming
+        var iceQuantityOption = IceQuantity.MEDIUM.naming
+        val subtypeSelect = listOf(
+            "MILK",
+            "ALMOND MILK"
+        )
+        val sweetnessSelect = listOf(
+            Sweetness.REGULAR.naming,
+            Sweetness.SEMI.naming,
+            Sweetness.EXTRA.naming,
+            Sweetness.NOTHING.naming
+        )
+        val iceQuantitySelect = listOf(
+            IceQuantity.HIGH.naming,
+            IceQuantity.MEDIUM.naming,
+            IceQuantity.LOW.naming
+        )
+
         Column {
             OutlinedButton(
                 contentPadding = PaddingValues(),
@@ -125,7 +175,13 @@ fun ProductOptions() {
                 border = BorderStroke(2.dp, Color.Gray),
                 colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent),
                 shape = RoundedCornerShape(1.dp),
-                onClick = { /*TODO*/ }
+                onClick = {
+                    onClickSelect(
+                        "SELECT MILK TYPE",
+                        subtypeSelect,
+                        subtypeOption
+                    )
+                }
             ) {
                 Row(
                     modifier = Modifier
@@ -153,7 +209,13 @@ fun ProductOptions() {
                 border = BorderStroke(2.dp, Color.Gray),
                 colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent),
                 shape = RoundedCornerShape(1.dp),
-                onClick = { /*TODO*/ }
+                onClick = {
+                    onClickSelect(
+                        "SELECT SWEETNESS LEVEL",
+                        sweetnessSelect,
+                        sweetnessOption
+                    )
+                }
             ) {
                 Row(
                     modifier = Modifier
@@ -181,7 +243,13 @@ fun ProductOptions() {
                 border = BorderStroke(2.dp, Color.Gray),
                 colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent),
                 shape = RoundedCornerShape(1.dp),
-                onClick = { /*TODO*/ }
+                onClick = {
+                    onClickSelect(
+                        "SELECT ICE QUANTITY",
+                        iceQuantitySelect,
+                        iceQuantityOption
+                    )
+                }
             ) {
                 Row(
                     modifier = Modifier
@@ -305,6 +373,56 @@ fun ProductOptions() {
                     fontWeight = FontWeight(700),
                     color = Color.White
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun SelectContent(
+    title: String,
+    options: List<String>,
+    selectedOption: String,
+    onSelect: (String) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 20.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(title)
+        }
+        options.forEach { option ->
+            Divider(
+                modifier = Modifier.fillMaxWidth().height(1.dp),
+                color = Color(0xFF7A85A3).copy(alpha = 0.5f)
+            )
+            Column(
+                modifier = Modifier.clickable {
+                    onSelect(option)
+                }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 15.dp),
+                    horizontalArrangement = if(option == selectedOption) Arrangement.SpaceEvenly else Arrangement.Center
+                ) {
+                    if(option == selectedOption) {
+                        Icon(Icons.Default.Close, contentDescription = null)
+                    }
+                    Text(
+                        option.uppercase(),
+                        fontSize = 19.sp,
+                        fontWeight = FontWeight(700),
+                        color = Color(0xFFFF0076)
+                    )
+                    if(option == selectedOption) {
+                        Icon(Icons.Default.Close, contentDescription = null, tint = Color.Transparent)
+                    }
+                }
             }
         }
     }
