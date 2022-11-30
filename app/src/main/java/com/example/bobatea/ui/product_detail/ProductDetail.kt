@@ -26,27 +26,25 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.bobatea.R
+import com.example.bobatea.model.Cart
 import com.example.bobatea.model.Drink
 import java.math.BigDecimal
 
 @Composable
-fun ProductDetail(navController: NavController) {
-    val drink = Drink("regular", "Milk tea", "Sweet tint of caramel and chocolate",
-        BigDecimal.valueOf(4.99), R.drawable.milk_tea)
-
+fun ProductDetail(navController: NavController, drink: Drink, cart: Cart) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
             .verticalScroll(rememberScrollState()),
         ) {
-        ProductImageCard(navController, drink)
+        ProductImageCard(navController, drink, cart)
         ProductOptions()
     }
 }
 
 @Composable
-fun ProductImageCard(navController: NavController, drink: Drink) {
+fun ProductImageCard(navController: NavController, drink: Drink, cart: Cart) {
     Card(
         modifier = Modifier
             .fillMaxWidth()

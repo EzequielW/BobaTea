@@ -16,6 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.bobatea.model.*
 import com.example.bobatea.ui.checkout.Checkout
 import com.example.bobatea.ui.product_detail.ProductDetail
 import com.example.bobatea.ui.product_list.ProductList
@@ -23,6 +24,7 @@ import com.example.bobatea.ui.theme.BobaTeaTheme
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import java.math.BigDecimal
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,7 +54,7 @@ sealed class AppRoute(
         true
     )
     object ProductDetail : AppRoute(
-        "product_detail",
+        "product_detail/{drink}",
         R.drawable.drink_icon,
         Color.Unspecified,
         false
@@ -80,6 +82,35 @@ fun BobaTeaApp() {
         AppRoute.Order,
         AppRoute.ProductDetail
     )
+
+    val drinkList = remember { mutableStateListOf(
+        Drink("regular", "Milk tea", "Sweet tint of caramel and chocolate",
+            BigDecimal.valueOf(4.99), R.drawable.milk_tea),
+        Drink("coffee", "Milk tea", "PREMIUM COLD BREW W/ BLACK TEA",
+            BigDecimal.valueOf(4.99), R.drawable.coffee),
+        Drink("matcha", "Milk tea", "SWEET JAPANESE MATCHA TEA",
+            BigDecimal.valueOf(4.99), R.drawable.matcha),
+        Drink("chat", "Milk tea", "MADE ITH GOLDEN CHAI TEA",
+            BigDecimal.valueOf(5.99), R.drawable.chat)
+    )}
+
+    val cart = remember {
+        Cart(
+            mutableStateListOf(
+                CartItem(
+                    Drink("regular", "Milk tea", "Sweet tint of caramel and chocolate",
+                        BigDecimal.valueOf(4.99), R.drawable.milk_tea),
+                    "milk",
+                    Sweetness.EXTRA,
+                    IceQuantity.MEDIUM,
+                    Topping.LARGE_TAPIOCA,
+                    2
+                )
+            ),
+            BigDecimal.valueOf(1.00),
+            BigDecimal.valueOf(3.00)
+        )
+    }
 
     BobaTeaTheme {
         val navController = rememberAnimatedNavController()
@@ -135,8 +166,8 @@ fun BobaTeaApp() {
             }
         ) { innerPadding ->
             AnimatedNavHost(navController, startDestination = AppRoute.ProductList.route, Modifier.padding(innerPadding)) {
-                composable(AppRoute.Profile.route) { ProductDetail(navController) }
-                composable(AppRoute.ProductList.route) { ProductList(navController) }
+                composable(AppRoute.Profile.route) { Checkout(navController, cart) }
+                composable(AppRoute.ProductList.route) { ProductList(navController, drinkList) }
                 composable(
                     AppRoute.Order.route,
                     enterTransition = {
@@ -150,7 +181,7 @@ fun BobaTeaApp() {
                             animationSpec = tween(700)
                         )
                     }
-                ) { Checkout(navController) }
+                ) { Checkout(navController, cart) }
                 composable(
                     AppRoute.ProductDetail.route,
                     enterTransition = {
@@ -164,7 +195,12 @@ fun BobaTeaApp() {
                             animationSpec = tween(700)
                         )
                     }
-                ) { ProductDetail(navController) }
+                ) { backStackEntry ->
+                    val drinkIndex =  backStackEntry.arguments?.getString("drink")
+                    if (drinkIndex != null) {
+                        ProductDetail(navController, drinkList[drinkIndex.toInt()], cart)
+                    }
+                }
             }
         }
     }

@@ -1,7 +1,6 @@
 package com.example.bobatea.ui.product_list
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,10 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,42 +19,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import com.example.bobatea.AppRoute
-import com.example.bobatea.R
 import com.example.bobatea.model.Drink
-import com.example.bobatea.ui.checkout.Checkout
-import com.example.bobatea.ui.product_detail.ProductDetail
-import java.math.BigDecimal
 
 @Composable
-fun ProductList(navController: NavHostController){
-    val drinkList = remember { mutableStateListOf<Drink>() }
-
-    drinkList.add(
-        Drink("regular", "Milk tea", "Sweet tint of caramel and chocolate",
-            BigDecimal.valueOf(4.99), R.drawable.milk_tea)
-    )
-    drinkList.add(
-        Drink("regular", "Milk tea", "Sweet tint of caramel and chocolate",
-            BigDecimal.valueOf(4.99), R.drawable.milk_tea)
-    )
-    drinkList.add(
-        Drink("regular", "Milk tea", "Sweet tint of caramel and chocolate",
-            BigDecimal.valueOf(4.99), R.drawable.milk_tea)
-    )
-    drinkList.add(
-        Drink("regular", "Milk tea", "Sweet tint of caramel and chocolate",
-            BigDecimal.valueOf(4.99), R.drawable.milk_tea)
-    )
-    drinkList.add(
-        Drink("regular", "Milk tea", "Sweet tint of caramel and chocolate",
-            BigDecimal.valueOf(4.99), R.drawable.milk_tea)
-    )
-
+fun ProductList(navController: NavHostController, drinkList: MutableList<Drink>){
     LazyColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
     ){
@@ -68,14 +34,22 @@ fun ProductList(navController: NavHostController){
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(max = 360.dp)) {
-                ProductCard(navController, drink = drink)
+                ProductCard(
+                    drink = drink,
+                    onAdd = {
+                        navController.navigate(
+                            AppRoute.ProductDetail.route
+                                .replace("{drink}", drinkList.indexOf(drink).toString())
+                        )
+                    }
+                )
             }
         }
     }
 }
 
 @Composable
-fun ProductCard(navController: NavHostController, drink: Drink){
+fun ProductCard(drink: Drink, onAdd: () -> Unit){
     Card(
         elevation = 4.dp,
         shape = RoundedCornerShape(1.dp)
@@ -127,9 +101,7 @@ fun ProductCard(navController: NavHostController, drink: Drink){
                     Text(
                         "ADD",
                         modifier = textModifier
-                            .clickable{
-                                navController.navigate("product_detail")
-                            },
+                            .clickable{ onAdd() },
                         fontSize = 16.sp,
                         fontWeight = FontWeight(900),
                         color = Color(0xFFFF0076)
