@@ -23,12 +23,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import com.example.bobatea.AppRoute
 import com.example.bobatea.R
 import com.example.bobatea.model.Drink
+import com.example.bobatea.ui.checkout.Checkout
+import com.example.bobatea.ui.product_detail.ProductDetail
 import java.math.BigDecimal
 
 @Composable
-fun ProductList(){
+fun ProductList(navController: NavHostController){
     val drinkList = remember { mutableStateListOf<Drink>() }
 
     drinkList.add(
@@ -61,14 +68,14 @@ fun ProductList(){
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(max = 360.dp)) {
-                ProductCard(drink = drink)
+                ProductCard(navController, drink = drink)
             }
         }
     }
 }
 
 @Composable
-fun ProductCard(drink: Drink){
+fun ProductCard(navController: NavHostController, drink: Drink){
     Card(
         elevation = 4.dp,
         shape = RoundedCornerShape(1.dp)
@@ -121,7 +128,7 @@ fun ProductCard(drink: Drink){
                         "ADD",
                         modifier = textModifier
                             .clickable{
-
+                                navController.navigate("product_detail")
                             },
                         fontSize = 16.sp,
                         fontWeight = FontWeight(900),

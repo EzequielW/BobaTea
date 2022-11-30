@@ -24,12 +24,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.bobatea.R
 import com.example.bobatea.model.Drink
 import java.math.BigDecimal
 
 @Composable
-fun ProductDetail() {
+fun ProductDetail(navController: NavController) {
     val drink = Drink("regular", "Milk tea", "Sweet tint of caramel and chocolate",
         BigDecimal.valueOf(4.99), R.drawable.milk_tea)
 
@@ -39,13 +40,13 @@ fun ProductDetail() {
             .background(Color.Black)
             .verticalScroll(rememberScrollState()),
         ) {
-        ProductImageCard(drink)
+        ProductImageCard(navController, drink)
         ProductOptions()
     }
 }
 
 @Composable
-fun ProductImageCard(drink: Drink) {
+fun ProductImageCard(navController: NavController, drink: Drink) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -66,7 +67,9 @@ fun ProductImageCard(drink: Drink) {
                 Column(
                     horizontalAlignment = Alignment.Start
                 ) {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = {
+                        navController.popBackStack()
+                    }) {
                         Icon(
                             Icons.Default.Close,
                             "backIcon",

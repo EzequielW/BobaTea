@@ -3,9 +3,8 @@ package com.example.bobatea
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -16,14 +15,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import com.example.bobatea.ui.checkout.Checkout
 import com.example.bobatea.ui.product_detail.ProductDetail
 import com.example.bobatea.ui.product_list.ProductList
 import com.example.bobatea.ui.theme.BobaTeaTheme
+import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.composable
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,6 +51,12 @@ sealed class AppRoute(
         Color.Unspecified,
         true
     )
+    object ProductDetail : AppRoute(
+        "product_detail",
+        R.drawable.drink_icon,
+        Color.Unspecified,
+        false
+    )
     object Order : AppRoute(
         "order",
         R.drawable.cart_icon,
@@ -60,21 +65,29 @@ sealed class AppRoute(
     )
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun BobaTeaApp() {
-    val routes = listOf(
+    val bottomRoutes = listOf(
         AppRoute.Profile,
         AppRoute.ProductList,
         AppRoute.Order,
     )
 
+    val allRoutes = listOf(
+        AppRoute.Profile,
+        AppRoute.ProductList,
+        AppRoute.Order,
+        AppRoute.ProductDetail
+    )
+
     BobaTeaTheme {
-        val navController = rememberNavController()
+        val navController = rememberAnimatedNavController()
         var bottomBarState by rememberSaveable { (mutableStateOf(true)) }
         var selectedColor by remember { (mutableStateOf(Color.White)) }
         val navBackStackEntry2 by navController.currentBackStackEntryAsState()
 
-        for (app_route in routes){
+        for (app_route in allRoutes){
             if(navBackStackEntry2?.destination?.route == app_route.route){
                 bottomBarState = app_route.showBottomBar
                 selectedColor = app_route.selectedColor
@@ -83,53 +96,75 @@ fun BobaTeaApp() {
 
         Scaffold(
             bottomBar = {
-                AnimatedVisibility(
-                    visible = bottomBarState,
-                    enter = slideInVertically(initialOffsetY = { it }),
-                    exit = slideOutVertically(targetOffsetY = { it }),
-                    content = {
-                        BottomNavigation (
-                            backgroundColor = Color(0xFF102346)
-                        ) {
-                            val navBackStackEntry by navController.currentBackStackEntryAsState()
-                            val currentDestination = navBackStackEntry?.destination
+                if(bottomBarState){
+                    BottomNavigation (
+                        backgroundColor = Color(0xFF102346)
+                    ) {
+                        val navBackStackEntry by navController.currentBackStackEntryAsState()
+                        val currentDestination = navBackStackEntry?.destination
 
-                            routes.forEach { appRoute ->
-                                BottomNavigationItem(
-                                    icon = {
-                                        Icon(
-                                            painter = painterResource(id = appRoute.icon),
-                                            contentDescription = null,
-                                        )},
-                                    selected = currentDestination?.hierarchy?.any { it.route == appRoute.route } == true,
-                                    onClick = {
-                                        navController.navigate(appRoute.route) {
-                                            // Pop up to the start destination of the graph to
-                                            // avoid building up a large stack of destinations
-                                            // on the back stack as users select items
-                                            popUpTo(navController.graph.findStartDestination().id) {
-                                                saveState = true
-                                            }
-                                            // Avoid multiple copies of the same destination when
-                                            // reselecting the same item
-                                            launchSingleTop = true
-                                            // Restore state when reselecting a previously selected item
-                                            restoreState = true
+                        bottomRoutes.forEach { appRoute ->
+                            BottomNavigationItem(
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(id = appRoute.icon),
+                                        contentDescription = null,
+                                    )},
+                                selected = currentDestination?.hierarchy?.any { it.route == appRoute.route } == true,
+                                onClick = {
+                                    navController.navigate(appRoute.route) {
+                                        // Pop up to the start destination of the graph to
+                                        // avoid building up a large stack of destinations
+                                        // on the back stack as users select items
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
                                         }
-                                    },
-                                    selectedContentColor = selectedColor,
-                                    unselectedContentColor = Color.White.copy(alpha = 0.3f)
-                                )
-                            }
+                                        // Avoid multiple copies of the same destination when
+                                        // reselecting the same item
+                                        launchSingleTop = true
+                                        // Restore state when reselecting a previously selected item
+                                        restoreState = true
+                                    }
+                                },
+                                selectedContentColor = selectedColor,
+                                unselectedContentColor = Color.White.copy(alpha = 0.3f)
+                            )
                         }
                     }
-                )
+                }
             }
         ) { innerPadding ->
-            NavHost(navController, startDestination = AppRoute.ProductList.route, Modifier.padding(innerPadding)) {
-                composable(AppRoute.Profile.route) { ProductDetail() }
-                composable(AppRoute.ProductList.route) { ProductList() }
-                composable(AppRoute.Order.route) { Checkout() }
+            AnimatedNavHost(navController, startDestination = AppRoute.ProductList.route, Modifier.padding(innerPadding)) {
+                composable(AppRoute.Profile.route) { ProductDetail(navController) }
+                composable(AppRoute.ProductList.route) { ProductList(navController) }
+                composable(
+                    AppRoute.Order.route,
+                    enterTransition = {
+                        slideIntoContainer(
+                            AnimatedContentScope.SlideDirection.Up,
+                            animationSpec = tween(700)
+                        )},
+                    exitTransition = {
+                        slideOutOfContainer(
+                            AnimatedContentScope.SlideDirection.Down,
+                            animationSpec = tween(700)
+                        )
+                    }
+                ) { Checkout(navController) }
+                composable(
+                    AppRoute.ProductDetail.route,
+                    enterTransition = {
+                            slideIntoContainer(
+                                AnimatedContentScope.SlideDirection.Up,
+                                animationSpec = tween(700)
+                            )},
+                    exitTransition = {
+                        slideOutOfContainer(
+                            AnimatedContentScope.SlideDirection.Down,
+                            animationSpec = tween(700)
+                        )
+                    }
+                ) { ProductDetail(navController) }
             }
         }
     }

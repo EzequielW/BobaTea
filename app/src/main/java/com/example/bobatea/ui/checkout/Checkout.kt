@@ -18,16 +18,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.bobatea.R
 import com.example.bobatea.model.*
 import com.example.bobatea.util.DottedShape
 import java.math.BigDecimal
 
 @Composable
-fun Checkout() {
+fun Checkout(
+    navController: NavController
+) {
     val cart = remember {
         Cart(
             mutableStateListOf(
@@ -69,10 +71,12 @@ fun Checkout() {
                         modifier = Modifier.size(width = 70.dp, height = 50.dp)
                     ) {
                         IconButton(
-                            onClick = {}
+                            onClick = {
+                                navController.popBackStack()
+                            }
                         ) {
                             Icon(
-                                modifier = Modifier.size(width = 32.dp, height = 32.dp),
+                                modifier = Modifier.size(width = 45.dp, height = 45.dp),
                                 imageVector = Icons.Default.Close,
                                 tint = Color(0xFFFF0076),
                                 contentDescription = null
@@ -153,7 +157,9 @@ fun Checkout() {
                 horizontalArrangement = Arrangement.SpaceEvenly
             ){
                 OutlinedButton(
-                    onClick = { /*TODO*/ },
+                    onClick = {
+                          navController.popBackStack()
+                    },
                     border = BorderStroke(1.dp, Color(0xFFFF0076)),
                     colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent),
                     shape = RoundedCornerShape(50),
@@ -331,10 +337,4 @@ fun CheckoutItem(name: String, value: String, color: Color) {
             color = color
         )
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun CheckoutPreview() {
-    Checkout()
 }
