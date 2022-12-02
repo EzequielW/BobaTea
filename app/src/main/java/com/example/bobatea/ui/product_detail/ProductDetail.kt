@@ -1,7 +1,9 @@
 package com.example.bobatea.ui.product_detail
 
+import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -20,10 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.bobatea.model.Cart
-import com.example.bobatea.model.Drink
-import com.example.bobatea.model.IceQuantity
-import com.example.bobatea.model.Sweetness
+import com.example.bobatea.model.*
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -38,6 +37,12 @@ fun ProductDetail(navController: NavController, drink: Drink, cart: Cart) {
     var title by remember { mutableStateOf("SELECT SWEETNESS LEVEL") }
     var selectOptions by remember { mutableStateOf(listOf("")) }
     var selectedOption by remember { mutableStateOf(Sweetness.SEMI.naming) }
+    var type by remember { mutableStateOf(DrinkOption.SWEETNESS) }
+
+    var subtypeOption by remember { mutableStateOf("MILK") }
+    var sweetnessOption by remember { mutableStateOf(Sweetness.REGULAR.naming) }
+    var iceQuantityOption by remember { mutableStateOf(IceQuantity.MEDIUM.naming) }
+    var toppingOption by remember { mutableStateOf(Topping.NONE) }
 
     ModalBottomSheetLayout(
         sheetState = sheetState,
@@ -46,10 +51,16 @@ fun ProductDetail(navController: NavController, drink: Drink, cart: Cart) {
                 title,
                 selectOptions,
                 selectedOption,
-                onSelect = { option ->
-                    selectedOption = option
+                type
+            ) { option, type ->
+                when (type) {
+                    DrinkOption.SUBTYPE -> subtypeOption = option
+                    DrinkOption.SWEETNESS -> sweetnessOption = option
+                    DrinkOption.ICE_QUANTITY -> iceQuantityOption = option
                 }
-            )},
+                selectedOption = option
+            }
+        },
         modifier = Modifier.fillMaxWidth(),
         content = {
             Column(
@@ -60,13 +71,22 @@ fun ProductDetail(navController: NavController, drink: Drink, cart: Cart) {
             ) {
                 ProductImageCard(navController, drink, cart)
                 ProductOptions(
-                    onClickSelect = { name, selectList, selected ->
+                    subtypeOption,
+                    sweetnessOption,
+                    iceQuantityOption,
+                    toppingOption,
+                    onClickSelect = { name, selectList, selected, t ->
                         title = name
                         selectOptions = selectList
+                        type = t
                         selectedOption = selected
+
                         coroutineScope.launch {
                             sheetState.show()
                         }
+                    },
+                    onTopping = { topping ->
+                        toppingOption = topping
                     }
                 )
             }
@@ -141,7 +161,14 @@ fun ProductImageCard(navController: NavController, drink: Drink, cart: Cart) {
 }
 
 @Composable
-fun ProductOptions(onClickSelect: (String, List<String>, String) -> Unit) {
+fun ProductOptions(
+    subtypeOption: String,
+    sweetnessOption: String,
+    iceQuantityOption: String,
+    toppingOption: Topping,
+    onClickSelect: (String, List<String>, String, DrinkOption) -> Unit,
+    onTopping: (Topping) -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -149,9 +176,6 @@ fun ProductOptions(onClickSelect: (String, List<String>, String) -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        var subtypeOption = "MILK"
-        var sweetnessOption = Sweetness.REGULAR.naming
-        var iceQuantityOption = IceQuantity.MEDIUM.naming
         val subtypeSelect = listOf(
             "MILK",
             "ALMOND MILK"
@@ -179,7 +203,8 @@ fun ProductOptions(onClickSelect: (String, List<String>, String) -> Unit) {
                     onClickSelect(
                         "SELECT MILK TYPE",
                         subtypeSelect,
-                        subtypeOption
+                        subtypeOption,
+                        DrinkOption.SUBTYPE
                     )
                 }
             ) {
@@ -190,7 +215,7 @@ fun ProductOptions(onClickSelect: (String, List<String>, String) -> Unit) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        "MILK",
+                        subtypeOption,
                         fontSize = 22.sp,
                         fontWeight = FontWeight(400),
                         color = Color.White,
@@ -213,7 +238,8 @@ fun ProductOptions(onClickSelect: (String, List<String>, String) -> Unit) {
                     onClickSelect(
                         "SELECT SWEETNESS LEVEL",
                         sweetnessSelect,
-                        sweetnessOption
+                        sweetnessOption,
+                        DrinkOption.SWEETNESS
                     )
                 }
             ) {
@@ -224,7 +250,7 @@ fun ProductOptions(onClickSelect: (String, List<String>, String) -> Unit) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        "REGULAR MILK",
+                        sweetnessOption.uppercase(),
                         fontSize = 22.sp,
                         fontWeight = FontWeight(400),
                         color = Color.White,
@@ -247,7 +273,8 @@ fun ProductOptions(onClickSelect: (String, List<String>, String) -> Unit) {
                     onClickSelect(
                         "SELECT ICE QUANTITY",
                         iceQuantitySelect,
-                        iceQuantityOption
+                        iceQuantityOption,
+                        DrinkOption.ICE_QUANTITY
                     )
                 }
             ) {
@@ -258,7 +285,7 @@ fun ProductOptions(onClickSelect: (String, List<String>, String) -> Unit) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        "W/ MEDIUM ICE",
+                        "W/ " + iceQuantityOption.uppercase() + " ICE",
                         fontSize = 22.sp,
                         fontWeight = FontWeight(400),
                         color = Color.White,
@@ -299,11 +326,23 @@ fun ProductOptions(onClickSelect: (String, List<String>, String) -> Unit) {
                     contentPadding = PaddingValues(),
                     shape = CircleShape,
                     border = BorderStroke(2.dp, Color(0xFFFF0076)),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White, backgroundColor = Color.Transparent),
-                    onClick = { /*TODO*/ }
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color.White,
+                        backgroundColor =
+                            if(toppingOption == Topping.LARGE_TAPIOCA)
+                                Color(0xFFFF0076)
+                            else Color.Transparent
+                    ),
+                    onClick = {
+                        if(toppingOption == Topping.LARGE_TAPIOCA){
+                            onTopping(Topping.NONE)
+                        } else{
+                            onTopping(Topping.LARGE_TAPIOCA)
+                        }
+                    }
                 ) {
                     Text(
-                        "LARGE TAPIOCA",
+                        Topping.LARGE_TAPIOCA.naming.uppercase(),
                         modifier = Modifier
                             .padding(vertical = 28.dp, horizontal = 4.dp)
                             .widthIn(max = 87.dp),
@@ -315,11 +354,23 @@ fun ProductOptions(onClickSelect: (String, List<String>, String) -> Unit) {
                     contentPadding = PaddingValues(),
                     shape = CircleShape,
                     border = BorderStroke(2.dp, Color(0xFFFF0076)),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White, backgroundColor = Color.Transparent),
-                    onClick = { /*TODO*/ }
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color.White,
+                        backgroundColor =
+                            if(toppingOption == Topping.SMALL_TAPIOCA)
+                                Color(0xFFFF0076)
+                            else Color.Transparent
+                    ),
+                    onClick = {
+                        if(toppingOption == Topping.SMALL_TAPIOCA){
+                            onTopping(Topping.NONE)
+                        } else{
+                            onTopping(Topping.SMALL_TAPIOCA)
+                        }
+                    }
                 ) {
                     Text(
-                        "SMALL TAPIOCA",
+                        Topping.SMALL_TAPIOCA.naming.uppercase(),
                         modifier = Modifier
                             .padding(vertical = 28.dp, horizontal = 4.dp)
                             .widthIn(max = 87.dp),
@@ -331,11 +382,23 @@ fun ProductOptions(onClickSelect: (String, List<String>, String) -> Unit) {
                     contentPadding = PaddingValues(),
                     shape = CircleShape,
                     border = BorderStroke(2.dp, Color(0xFFFF0076)),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White, backgroundColor = Color.Transparent),
-                    onClick = { /*TODO*/ }
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color.White,
+                        backgroundColor =
+                            if(toppingOption == Topping.LYCHEE_JELLY)
+                                Color(0xFFFF0076)
+                            else Color.Transparent
+                    ),
+                    onClick = {
+                        if(toppingOption == Topping.LYCHEE_JELLY){
+                            onTopping(Topping.NONE)
+                        } else{
+                            onTopping(Topping.LYCHEE_JELLY)
+                        }
+                    }
                 ) {
                     Text(
-                        "LYCHEE JELLY",
+                        Topping.LYCHEE_JELLY.naming.uppercase(),
                         modifier = Modifier
                             .padding(vertical = 28.dp, horizontal = 4.dp)
                             .widthIn(max = 87.dp),
@@ -356,7 +419,7 @@ fun ProductOptions(onClickSelect: (String, List<String>, String) -> Unit) {
                 color = Color.Gray
             )
             Text(
-                "$4.99",
+                if(toppingOption == Topping.NONE) "$4.99" else "$5.49",
                 fontSize = 19.sp,
                 fontWeight = FontWeight(700),
                 color = Color.White
@@ -383,7 +446,8 @@ fun SelectContent(
     title: String,
     options: List<String>,
     selectedOption: String,
-    onSelect: (String) -> Unit
+    type: DrinkOption,
+    onSelect: (String, DrinkOption) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -401,7 +465,7 @@ fun SelectContent(
             )
             Column(
                 modifier = Modifier.clickable {
-                    onSelect(option)
+                    onSelect(option, type)
                 }
             ) {
                 Row(

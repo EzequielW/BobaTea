@@ -26,5 +26,12 @@ enum class IceQuantity(val naming: String) {
 enum class Topping(val naming: String) {
     LARGE_TAPIOCA("large tapioca"),
     SMALL_TAPIOCA("small tapioca"),
-    LYCHEE_JELLY("lychee jelly")
+    LYCHEE_JELLY("lychee jelly"),
+    NONE("")
+}
+
+enum class DrinkOption() {
+    SUBTYPE,
+    SWEETNESS,
+    ICE_QUANTITY
 }
