@@ -127,10 +127,28 @@ fun BobaTeaApp() {
                         bottomRoutes.forEach { appRoute ->
                             BottomNavigationItem(
                                 icon = {
-                                    Icon(
-                                        painter = painterResource(id = appRoute.icon),
-                                        contentDescription = null,
-                                    )},
+                                   if(appRoute.route == "order" && cart.cartItems.size > 0){
+                                       BadgedBox(badge = {
+                                           Badge(backgroundColor = Color(0xFFFF0076)){
+                                               Text(
+                                                   cart.cartItems.size.toString(),
+                                                   color = Color.White
+                                               )
+                                           }
+                                       }) {
+                                           Icon(
+                                               painter = painterResource(id = appRoute.icon),
+                                               contentDescription = null,
+                                           )
+                                       }
+                                   }
+                                   else{
+                                       Icon(
+                                           painter = painterResource(id = appRoute.icon),
+                                           contentDescription = null,
+                                       )
+                                   }
+                                },
                                 selected = currentDestination?.hierarchy?.any { it.route == appRoute.route } == true,
                                 onClick = {
                                     navController.navigate(appRoute.route) {
