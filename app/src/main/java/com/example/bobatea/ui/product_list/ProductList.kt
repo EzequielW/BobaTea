@@ -5,8 +5,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
+import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,7 +30,13 @@ fun ProductList(navController: NavHostController, drinkList: MutableList<Drink>)
     LazyColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
     ){
-        items(drinkList) { drink ->
+        itemsIndexed(drinkList) { index, drink ->
+            if(index != 0){
+                Divider(
+                    modifier = Modifier.height(9.dp).fillMaxWidth(),
+                    color = Color.Black
+                )
+            }
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier

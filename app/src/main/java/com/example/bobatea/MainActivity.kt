@@ -96,17 +96,7 @@ fun BobaTeaApp() {
 
     val cart = remember {
         Cart(
-            mutableStateListOf(
-                CartItem(
-                    Drink("regular", "Milk tea", "Sweet tint of caramel and chocolate",
-                        BigDecimal.valueOf(4.99), R.drawable.milk_tea),
-                    "milk",
-                    Sweetness.EXTRA,
-                    IceQuantity.MEDIUM,
-                    Topping.LARGE_TAPIOCA,
-                    2
-                )
-            ),
+            mutableStateListOf(),
             BigDecimal.valueOf(1.00),
             BigDecimal.valueOf(3.00)
         )

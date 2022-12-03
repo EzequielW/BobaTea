@@ -1,9 +1,7 @@
 package com.example.bobatea.ui.product_detail
 
-import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -61,41 +59,71 @@ fun ProductDetail(navController: NavController, drink: Drink, cart: Cart) {
                 selectedOption = option
             }
         },
-        modifier = Modifier.fillMaxWidth(),
-        content = {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black)
-                    .verticalScroll(rememberScrollState()),
-            ) {
-                ProductImageCard(navController, drink, cart)
-                ProductOptions(
-                    subtypeOption,
-                    sweetnessOption,
-                    iceQuantityOption,
-                    toppingOption,
-                    onClickSelect = { name, selectList, selected, t ->
-                        title = name
-                        selectOptions = selectList
-                        type = t
-                        selectedOption = selected
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+                .verticalScroll(rememberScrollState()),
+        ) {
+            ProductImageCard(navController, drink)
+            ProductOptions(
+                subtypeOption,
+                sweetnessOption,
+                iceQuantityOption,
+                toppingOption,
+                onClickSelect = { name, selectList, selected, t ->
+                    title = name
+                    selectOptions = selectList
+                    type = t
+                    selectedOption = selected
 
-                        coroutineScope.launch {
-                            sheetState.show()
-                        }
-                    },
-                    onTopping = { topping ->
-                        toppingOption = topping
+                    coroutineScope.launch {
+                        sheetState.show()
                     }
-                )
-            }
+                },
+                onTopping = { topping ->
+                    toppingOption = topping
+                },
+                onAdd = {
+                    var sweetnessChoose = Sweetness.NOTHING
+                    var iceQuantityChoose = IceQuantity.LOW
+
+                    for(s in Sweetness.values()){
+                        if(s.naming == sweetnessOption){
+                            sweetnessChoose = s
+                            break
+                        }
+                    }
+
+                    for(iq in IceQuantity.values()){
+                        if(iq.naming == iceQuantityOption){
+                            iceQuantityChoose = iq
+                            break
+                        }
+                    }
+
+                    cart.cartItems.add(
+                        CartItem(
+                            drink,
+                            subtypeOption,
+                            sweetnessChoose,
+                            iceQuantityChoose,
+                            toppingOption,
+                            1
+                        )
+                    )
+
+                    navController.popBackStack()
+                }
+            )
         }
-    )
+    }
 }
 
 @Composable
-fun ProductImageCard(navController: NavController, drink: Drink, cart: Cart) {
+fun ProductImageCard(navController: NavController, drink: Drink) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -167,7 +195,8 @@ fun ProductOptions(
     iceQuantityOption: String,
     toppingOption: Topping,
     onClickSelect: (String, List<String>, String, DrinkOption) -> Unit,
-    onTopping: (Topping) -> Unit
+    onTopping: (Topping) -> Unit,
+    onAdd: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -427,7 +456,7 @@ fun ProductOptions(
             Button(
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFF0076)),
                 shape = RoundedCornerShape(50),
-                onClick = { /*TODO*/ }
+                onClick = onAdd
             ) {
                 Text(
                     "ADD",
